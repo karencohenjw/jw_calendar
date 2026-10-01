@@ -17,8 +17,8 @@ Gem::Specification.new do |spec|
   spec.license = "MIT"
   spec.required_ruby_version = ">= 3.3"
   spec.files = (Dir.glob("lib/**/*.rb") + Dir.glob("exe/*") + Dir.glob("docs/**/*.md") +
-                %w[README.md LICENSE.txt CHANGELOG.md SECURITY.md CONTRIBUTING.md CODE_OF_CONDUCT.md]).
-    select { |path| File.file?(path) }.sort
+                %w[README.md LICENSE.txt CHANGELOG.md SECURITY.md CONTRIBUTING.md CODE_OF_CONDUCT.md])
+               .select { |path| File.file?(path) }.sort
   spec.bindir = "exe"
   spec.executables = ["jwcalendar"]
   spec.require_paths = ["lib"]
@@ -30,8 +30,4 @@ Gem::Specification.new do |spec|
     "bug_tracker_uri" => "https://github.com/karencohenjw/jw_calendar/issues",
     "rubygems_mfa_required" => "true"
   }
-  spec.add_development_dependency "minitest", "~> 5.15"
-  spec.add_development_dependency "rake", "~> 13.0"
-  spec.add_development_dependency "rubocop", "~> 1.60"
-  spec.add_development_dependency "yard", "~> 0.9"
 end
