@@ -12,9 +12,8 @@ module JWCalendar
         unless week_year.is_a?(Integer) && week_year.positive?
           raise InvalidISOWeekError, "ISO week-year must be a positive Integer"
         end
-        unless weekday.is_a?(Integer) && weekday.between?(1, 7)
-          raise InvalidISOWeekError, "ISO weekday must be in 1..7"
-        end
+        raise InvalidISOWeekError, "ISO weekday must be in 1..7" unless weekday.is_a?(Integer) && weekday.between?(1, 7)
+
         weeks = self.class.weeks_in_year(week_year)
         unless week.is_a?(Integer) && week.between?(1, weeks)
           raise InvalidISOWeekError, "ISO week must be in 1..#{weeks} for #{week_year}"
@@ -42,7 +41,10 @@ module JWCalendar
 
       # Return 52 or 53 according to the ISO week-year rule.
       def self.weeks_in_year(year)
-        raise InvalidISOWeekError, "ISO week-year must be a positive Integer" unless year.is_a?(Integer) && year.positive?
+        unless year.is_a?(Integer) && year.positive?
+          raise InvalidISOWeekError,
+                "ISO week-year must be a positive Integer"
+        end
 
         jan1_weekday = (Calendars::Gregorian.to_jdn(year, 1, 1) % 7) + 1
         return 53 if jan1_weekday == 4 || (jan1_weekday == 3 && Calendars::Gregorian.leap_year?(year))
@@ -58,7 +60,7 @@ module JWCalendar
       end
 
       def to_s
-        format("%04d-W%02d-%d", week_year, week, weekday)
+        format("%<week_year>04d-W%<week>02d-%<weekday>d", week_year:, week:, weekday:)
       end
 
       def weekday_name
