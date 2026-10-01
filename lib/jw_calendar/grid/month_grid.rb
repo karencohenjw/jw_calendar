@@ -11,41 +11,25 @@ module JWCalendar
       # Build a month grid without producing any HTML or locale-dependent output.
       def initialize(year:, month:, week_start: :monday, fixed_weeks: nil,
                      include_adjacent: true, calendar: :gregorian)
-        raise InvalidCalendarError, "calendar must be :gregorian or :julian" unless CivilDate::CALENDARS.include?(calendar)
-        engine = calendar == :gregorian ? Calendars::Gregorian : Calendars::Julian
+        engine = calendar_engine(calendar)
         engine.days_in_month(year, month)
-        unless week_start.is_a?(Integer) && week_start.between?(1, 7)
-          week_start = WEEKDAY_STARTS[week_start]
-        end
-        raise ArgumentError, "week_start must be :monday, :sunday, or ISO weekday 1..7" unless week_start
-        unless fixed_weeks.nil? || [4, 5, 6].include?(fixed_weeks)
-          raise ArgumentError, "fixed_weeks must be nil, 4, 5, or 6"
-        end
+        week_start = normalize_week_start(week_start)
+        validate_fixed_weeks!(fixed_weeks)
 
-        @year, @month, @week_start, @fixed_weeks, @calendar = year, month, week_start, fixed_weeks, calendar
-        @include_adjacent = !!include_adjacent
-        first = CivilDate.new(year, month, 1, calendar: calendar)
-        leading = (first.weekday - week_start) % 7
-        natural_weeks = ((leading + engine.days_in_month(year, month) + 6) / 7)
-        weeks = fixed_weeks || natural_weeks
-        if weeks < natural_weeks
-          raise ArgumentError, "#{weeks} rows cannot contain all dates for #{year}-#{format('%02d', month)}"
-        end
-        @rows = Array.new(weeks) do |row|
-          Array.new(7) do |column|
-            actual = first.add_days((row * 7) + column - leading)
-            in_month = actual.year == year && actual.month == month && actual.calendar == calendar
-            date = in_month || @include_adjacent ? actual : nil
-            Cell.new(date: date, in_current_month: in_month, week_index: row, column_index: column)
-          end.freeze
-        end.freeze
+        @year = year
+        @month = month
+        @week_start = week_start
+        @fixed_weeks = fixed_weeks
+        @calendar = calendar
+        @include_adjacent = include_adjacent
+        first = CivilDate.new(year, month, 1, calendar:)
+        leading, weeks = layout_dimensions(first, engine, week_start, fixed_weeks)
+        @rows = build_rows(first, leading, weeks)
         freeze
       end
 
       # Return seven-cell rows.
-      def rows
-        @rows
-      end
+      attr_reader :rows
 
       def weeks
         rows.length
@@ -68,8 +52,8 @@ module JWCalendar
       # Return a JSON-friendly hash of grid semantics.
       def to_h
         {
-          year: year, month: month, calendar: calendar, week_start: week_start,
-          fixed_weeks: fixed_weeks, weekdays: day_names,
+          year:, month:, calendar:, week_start:,
+          fixed_weeks:, weekdays: day_names,
           rows: rows.map do |row|
             row.map do |cell|
               { date: cell.date&.to_s, day: cell.date&.day,
@@ -78,6 +62,52 @@ module JWCalendar
             end
           end
         }
+      end
+
+      private
+
+      def calendar_engine(calendar)
+        return Calendars::Gregorian if calendar == :gregorian
+        return Calendars::Julian if calendar == :julian
+
+        raise InvalidCalendarError, "calendar must be :gregorian or :julian"
+      end
+
+      def normalize_week_start(week_start)
+        return week_start if week_start.is_a?(Integer) && week_start.between?(1, 7)
+
+        normalized = WEEKDAY_STARTS[week_start]
+        raise ArgumentError, "week_start must be :monday, :sunday, or ISO weekday 1..7" unless normalized
+
+        normalized
+      end
+
+      def validate_fixed_weeks!(fixed_weeks)
+        return if fixed_weeks.nil? || [4, 5, 6].include?(fixed_weeks)
+
+        raise ArgumentError, "fixed_weeks must be nil, 4, 5, or 6"
+      end
+
+      def layout_dimensions(first, engine, week_start, fixed_weeks)
+        leading = (first.weekday - week_start) % 7
+        natural_weeks = (leading + engine.days_in_month(year, month) + 6) / 7
+        weeks = fixed_weeks || natural_weeks
+        if weeks < natural_weeks
+          raise ArgumentError, "#{weeks} rows cannot contain all dates for #{year}-#{format('%02d', month)}"
+        end
+
+        [leading, weeks]
+      end
+
+      def build_rows(first, leading, weeks)
+        Array.new(weeks) do |row|
+          Array.new(7) do |column|
+            actual = first.add_days((row * 7) + column - leading)
+            in_month = actual.year == year && actual.month == month && actual.calendar == calendar
+            date = in_month || @include_adjacent ? actual : nil
+            Cell.new(date:, in_current_month: in_month, week_index: row, column_index: column)
+          end.freeze
+        end.freeze
       end
     end
   end

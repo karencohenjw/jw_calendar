@@ -8,7 +8,7 @@ module JWCalendar
 
       def initialize(date:, in_current_month:, week_index:, column_index:)
         @date = date
-        @in_current_month = !!in_current_month
+        @in_current_month = in_current_month
         @week_index = week_index
         @column_index = column_index
         freeze
