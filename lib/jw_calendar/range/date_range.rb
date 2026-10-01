@@ -17,7 +17,8 @@ module JWCalendar
       end
       raise ArgumentError, "start_date must not follow end_date" if start_date > end_date
 
-      @start_date, @end_date = start_date, end_date
+      @start_date = start_date
+      @end_date = end_date
       freeze
     end
 
