@@ -7,7 +7,7 @@ module JWCalendar
       module_function
 
       def parse_date(value, calendar: :gregorian)
-        CivilDate.parse(value, calendar: calendar)
+        CivilDate.parse(value, calendar:)
       end
 
       def format_date(date)
