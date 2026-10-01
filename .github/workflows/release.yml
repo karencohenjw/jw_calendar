@@ -1,0 +1,57 @@
+name: Release gem
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: release
+    permissions:
+      contents: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "4.0"
+          bundler-cache: true
+      - run: bundle exec rake test
+      - run: bundle exec rubocop
+      - run: bundle exec rake yard
+      - run: gem build jw_calendar.gemspec
+      - uses: rubygems/release-gem@v1
+
+  verify-public-install:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "4.0"
+      - name: Install the published gem and smoke-test its CLI
+        run: |
+          for attempt in $(seq 1 10); do
+            if gem install jw_calendar --version 0.1.0 --no-document; then
+              break
+            fi
+            if [ "$attempt" -eq 10 ]; then
+              exit 1
+            fi
+            sleep 6
+          done
+          ruby -e 'require "jw_calendar"; puts JWCalendar::VERSION'
+          jwcalendar --version
+          jwcalendar inspect 2027-01-01
+          jwcalendar iso-week 2027-01-01
+          jwcalendar grid 2027-01 --week-start monday
+          jwcalendar jdn 2000-01-01

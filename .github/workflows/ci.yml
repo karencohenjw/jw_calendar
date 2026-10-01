@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Ruby ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ruby: ["3.3", "3.4", "4.0"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
+      - run: bundle exec rake test
+      - run: bundle exec rubocop
+      - run: bundle exec rake yard
+      - run: gem build jw_calendar.gemspec
+      - run: gem specification jw_calendar-*.gem --yaml
+      - name: Install the built artifact and smoke-test the executable
+        run: |
+          gem_home="$RUNNER_TEMP/jw-calendar-gems"
+          gem install --local --install-dir "$gem_home" --no-document jw_calendar-*.gem
+          export GEM_HOME="$gem_home"
+          export GEM_PATH="$gem_home:$(gem env gempath)"
+          export PATH="$gem_home/bin:$PATH"
+          ruby -e 'require "jw_calendar"; puts JWCalendar::VERSION'
+          jwcalendar --version
+          jwcalendar inspect 2027-01-01
+          jwcalendar iso-week 2027-01-01
+          jwcalendar grid 2027-01 --week-start monday
+          jwcalendar jdn 2000-01-01
