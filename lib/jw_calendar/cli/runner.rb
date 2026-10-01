@@ -8,7 +8,8 @@ module JWCalendar
     # Standard-library command-line interface used by the jwcalendar executable.
     class Runner
       def initialize(stdout: $stdout, stderr: $stderr)
-        @stdout, @stderr = stdout, stderr
+        @stdout = stdout
+        @stderr = stderr
       end
 
       def run(argv)
@@ -58,7 +59,8 @@ module JWCalendar
       end
 
       def iso_week(args)
-        json, calendar = false, :gregorian
+        json = false
+        calendar = :gregorian
         parser = OptionParser.new do |opts|
           opts.on("--json") { json = true }
           opts.on("--calendar NAME", %w[gregorian julian]) { |value| calendar = value.to_sym }
@@ -69,19 +71,20 @@ module JWCalendar
         output = { date: date.to_s, week_year: week.week_year, week: week.week,
                    weekday: week.weekday, weekday_name: week.weekday_name,
                    iso_date: week.to_s }
-        @stdout.puts(json ? JSON.pretty_generate(output) : "#{week.to_s} (#{week.weekday_name})")
+        @stdout.puts(json ? JSON.pretty_generate(output) : "#{week} (#{week.weekday_name})")
         0
       end
 
       def jdn(args)
-        json, calendar = false, :gregorian
+        json = false
+        calendar = :gregorian
         parser = OptionParser.new do |opts|
           opts.on("--json") { json = true }
           opts.on("--calendar NAME", %w[gregorian julian]) { |value| calendar = value.to_sym }
         end
         parser.parse!(args)
         date = parse_single_date(args, calendar)
-        result = { date: date.to_s, calendar: calendar, jdn: date.to_jdn,
+        result = { date: date.to_s, calendar:, jdn: date.to_jdn,
                    jd_at_midnight: Conversion::JulianDayNumber.jd(date).to_s,
                    mjd_at_midnight: Conversion::JulianDayNumber.mjd(date).to_s }
         @stdout.puts(json ? JSON.pretty_generate(result) : result.map { |key, value| "#{key}: #{value}" }.join("\n"))
@@ -99,7 +102,8 @@ module JWCalendar
         date = parse_single_date(args, options[:from])
         converted = Conversion::CalendarConverter.convert(date, to: options[:to])
         result = { input: date.to_s, from: options[:from], result: converted.to_s, to: options[:to], jdn: date.to_jdn }
-        @stdout.puts(options[:json] ? JSON.pretty_generate(result) : "#{date} (#{options[:from]}) = #{converted} (#{options[:to]})")
+        human_result = "#{date} (#{options[:from]}) = #{converted} (#{options[:to]})"
+        @stdout.puts(options[:json] ? JSON.pretty_generate(result) : human_result)
         0
       end
 
@@ -112,7 +116,10 @@ module JWCalendar
           opts.on("--json") { options[:json] = true }
         end
         parser.parse!(args)
-        raise ArgumentError, "expected one YYYY-MM month" unless args.length == 1 && (match = /\A(\d{4,})-(\d{2})\z/.match(args.first))
+        unless args.length == 1 && (match = /\A(\d{4,})-(\d{2})\z/.match(args.first))
+          raise ArgumentError,
+                "expected one YYYY-MM month"
+        end
 
         layout = Grid::MonthGrid.new(year: match[1].to_i, month: match[2].to_i,
                                      week_start: options[:week_start], fixed_weeks: options[:fixed_weeks],
@@ -128,12 +135,14 @@ module JWCalendar
         raise ArgumentError, "expected one year" unless args.length == 1 && /\A\d+\z/.match?(args.first)
 
         report = Boundary::Analyzer.year(args.first.to_i)
-        @stdout.puts(json ? JSON.pretty_generate(report.to_h) : report.map { |event| "#{event[:date]} #{event[:type]}" }.join("\n"))
+        @stdout.puts(json ? JSON.pretty_generate(report.to_h) : report.map do |event|
+                                                                  "#{event[:date]} #{event[:type]}"
+                                                                end.join("\n"))
         0
       end
 
       def render_grid(layout)
-        title = format("%04d-%02d", layout.year, layout.month)
+        title = format("%<year>04d-%<month>02d", year: layout.year, month: layout.month)
         lines = ["#{title}  (week starts #{ISO::WeekDate::WEEKDAY_NAMES[layout.week_start - 1]})",
                  layout.day_names.map { |name| name[0, 3].rjust(4) }.join]
         layout.rows.each do |row|
@@ -153,7 +162,7 @@ module JWCalendar
       def parse_single_date(args, calendar)
         raise ArgumentError, "expected one YYYY-MM-DD date" unless args.length == 1
 
-        CivilDate.parse(args.first, calendar: calendar)
+        CivilDate.parse(args.first, calendar:)
       end
 
       def version
