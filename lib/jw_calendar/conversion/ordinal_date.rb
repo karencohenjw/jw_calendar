@@ -11,6 +11,7 @@ module JWCalendar
         unless CivilDate::CALENDARS.include?(calendar)
           raise InvalidCalendarError, "calendar must be :gregorian or :julian"
         end
+
         engine = calendar == :gregorian ? Calendars::Gregorian : Calendars::Julian
         engine.days_in_year(year)
         unless day.is_a?(Integer) && day.between?(1, engine.days_in_year(year))
@@ -30,12 +31,12 @@ module JWCalendar
 
       # Convert the ordinal value to its calendar date.
       def to_date
-        jan1 = CivilDate.new(year, 1, 1, calendar: calendar)
+        jan1 = CivilDate.new(year, 1, 1, calendar:)
         jan1.add_days(day - 1)
       end
 
       def to_s
-        format("%04d-%03d", year, day)
+        format("%<year>04d-%<day>03d", year:, day:)
       end
 
       def ==(other)

@@ -17,7 +17,7 @@ module JWCalendar
 
       # Convert an integer JDN into a civil date.
       def to_date(jdn, calendar: :gregorian)
-        CivilDate.from_jdn(jdn, calendar: calendar)
+        CivilDate.from_jdn(jdn, calendar:)
       end
 
       # Return exact Julian Date for an explicitly supplied fraction of a day.
@@ -35,7 +35,7 @@ module JWCalendar
         jd_value = rational_number!(value)
         shifted = jd_value + HALF
         jdn = shifted.floor
-        [to_date(jdn, calendar: calendar), shifted - jdn]
+        [to_date(jdn, calendar:), shifted - jdn]
       end
 
       # Return MJD at midnight plus an optional exact fraction of a day.
@@ -52,7 +52,7 @@ module JWCalendar
         day_offset = mjd_value.floor
         fraction = mjd_value - day_offset
         # MJD 0 is Gregorian 1858-11-17 at midnight (JDN 2,400,001).
-        [to_date(day_offset + 2_400_001, calendar: calendar), fraction]
+        [to_date(day_offset + 2_400_001, calendar:), fraction]
       end
 
       def rational_fraction!(value)
