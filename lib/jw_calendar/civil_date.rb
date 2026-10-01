@@ -15,9 +15,7 @@ module JWCalendar
     # @param day [Integer] valid day in the selected month
     # @param calendar [Symbol] `:gregorian` or `:julian`
     def initialize(year, month, day, calendar: :gregorian)
-      unless CALENDARS.include?(calendar)
-        raise InvalidCalendarError, "calendar must be :gregorian or :julian"
-      end
+      raise InvalidCalendarError, "calendar must be :gregorian or :julian" unless CALENDARS.include?(calendar)
 
       validator = calendar == :gregorian ? Calendars::Gregorian : Calendars::Julian
       validator.validate_date!(year, month, day)
@@ -43,7 +41,7 @@ module JWCalendar
       match = /\A(\d{4,})-(\d{2})-(\d{2})\z/.match(value.to_s)
       raise InvalidDateError, "expected YYYY-MM-DD, got #{value.inspect}" unless match
 
-      new(match[1].to_i, match[2].to_i, match[3].to_i, calendar: calendar)
+      new(match[1].to_i, match[2].to_i, match[3].to_i, calendar:)
     end
 
     # Compare by absolute day, independent of the calendar label.
@@ -88,7 +86,7 @@ module JWCalendar
     def add_days(amount)
       raise ArgumentError, "amount must be an Integer" unless amount.is_a?(Integer)
 
-      self.class.from_jdn(to_jdn + amount, calendar: calendar)
+      self.class.from_jdn(to_jdn + amount, calendar:)
     end
 
     def subtract_days(amount)
@@ -115,7 +113,7 @@ module JWCalendar
     end
 
     def to_s
-      format("%04d-%02d-%02d", year, month, day)
+      format("%<year>04d-%<month>02d-%<day>02d", year:, month:, day:)
     end
 
     def to_iso8601
@@ -123,17 +121,15 @@ module JWCalendar
     end
 
     def inspect
-      "#<#{self.class} #{to_s} calendar=#{calendar}>"
+      "#<#{self.class} #{self} calendar=#{calendar}>"
     end
 
     # Convert an integer JDN to a date label in the selected calendar.
     def self.from_jdn(jdn, calendar: :gregorian)
-      unless CALENDARS.include?(calendar)
-        raise InvalidCalendarError, "calendar must be :gregorian or :julian"
-      end
+      raise InvalidCalendarError, "calendar must be :gregorian or :julian" unless CALENDARS.include?(calendar)
 
       converter = calendar == :gregorian ? Calendars::Gregorian : Calendars::Julian
-      new(*converter.from_jdn(jdn), calendar: calendar)
+      new(*converter.from_jdn(jdn), calendar:)
     end
   end
 end
