@@ -12,16 +12,16 @@ class GridReformRangeTest < Minitest::Test
     assert_equal 6, fixed.rows.length
     assert_equal 42, fixed.cells.length
     assert_equal %w[Sunday Monday Tuesday Wednesday Thursday Friday Saturday], sunday.day_names
-    assert fixed.rows.all? { |row| row.length == 7 }
+    assert(fixed.rows.all? { |row| row.length == 7 })
     assert_equal 4, JWCalendar::Grid::MonthGrid.new(year: 2021, month: 2, week_start: :monday).weeks
   end
 
   def test_month_grid_adjacent_and_blank_modes
     adjacent = JWCalendar::Grid::MonthGrid.new(year: 2027, month: 6, week_start: :monday)
     blank = JWCalendar::Grid::MonthGrid.new(year: 2027, month: 6, week_start: :monday, include_adjacent: false)
-    assert adjacent.cells.any? { |cell| cell.date && !cell.in_current_month? }
-    assert blank.cells.any? { |cell| cell.date.nil? }
-    assert blank.cells.select(&:in_current_month?).all? { |cell| cell.date }
+    assert(adjacent.cells.any? { |cell| cell.date && !cell.in_current_month? })
+    assert(blank.cells.any? { |cell| cell.date.nil? })
+    assert(blank.cells.select(&:in_current_month?).all?(&:date))
     assert_raises(ArgumentError) do
       JWCalendar::Grid::MonthGrid.new(year: 2027, month: 1, fixed_weeks: 4)
     end
@@ -57,7 +57,7 @@ class GridReformRangeTest < Minitest::Test
   def test_civil_results_do_not_depend_on_timezone_environment
     date = JWCalendar::CivilDate.gregorian(2027, 1, 1)
     baseline = [date.to_s, date.to_jdn, date.weekday, date.iso_week.to_s]
-    previous = ENV["TZ"]
+    previous = ENV.fetch("TZ", nil)
     ["UTC", "Pacific/Apia"].each do |zone|
       ENV["TZ"] = zone
       assert_equal baseline, [date.to_s, date.to_jdn, date.weekday, date.iso_week.to_s]
@@ -68,10 +68,10 @@ class GridReformRangeTest < Minitest::Test
 
   def test_boundary_report_has_calendar_cases
     report = JWCalendar::Boundary::Analyzer.year(2027)
-    assert report.any? { |event| event[:type] == :six_row_month }
-    assert report.any? { |event| event[:type] == :iso_week_year_rollover }
-    assert report.any? { |event| event[:type] == :iso_week_53 }
-    assert JWCalendar::Boundary::Analyzer.year(2024).any? { |event| event[:type] == :leap_day }
+    assert(report.any? { |event| event[:type] == :six_row_month })
+    assert(report.any? { |event| event[:type] == :iso_week_year_rollover })
+    assert(report.any? { |event| event[:type] == :iso_week_53 })
+    assert(JWCalendar::Boundary::Analyzer.year(2024).any? { |event| event[:type] == :leap_day })
     offset = JWCalendar::Boundary::Analyzer.year(1700).find do |event|
       event[:type] == :gregorian_julian_offset_change
     end
@@ -79,6 +79,6 @@ class GridReformRangeTest < Minitest::Test
     reform_report = JWCalendar::Boundary::Analyzer.year(
       1582, reform_calendar: JWCalendar::Calendars::ReformCalendar.papal
     )
-    assert_equal 10, reform_report.count { |event| event[:type] == :reform_gap }
+    assert_equal(10, reform_report.count { |event| event[:type] == :reform_gap })
   end
 end

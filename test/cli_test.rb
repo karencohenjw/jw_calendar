@@ -8,7 +8,8 @@ require "rbconfig"
 
 class CLITest < Minitest::Test
   def run_cli(*args)
-    out, err = StringIO.new, StringIO.new
+    out = StringIO.new
+    err = StringIO.new
     status = JWCalendar::CLI::Runner.new(stdout: out, stderr: err).run(args)
     [status, out.string, err.string]
   end
@@ -33,7 +34,7 @@ class CLITest < Minitest::Test
     status, output, = run_cli("grid", "2027-01", "--fixed-weeks", "6", "--json")
     assert_equal 0, status
     assert_equal 6, JSON.parse(output).fetch("rows").length
-    status, output, = run_cli("iso-week", "2027-01-01", "--json")
+    _, output, = run_cli("iso-week", "2027-01-01", "--json")
     assert_equal "2026-W53-5", JSON.parse(output).fetch("iso_date")
   end
 
