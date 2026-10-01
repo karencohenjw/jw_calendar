@@ -8,12 +8,12 @@ module JWCalendar
       attr_reader :events
 
       def initialize(events)
-        @events = events.map { |event| event.freeze }.freeze
+        @events = events.map(&:freeze).freeze
         freeze
       end
 
-      def each(&block)
-        events.each(&block)
+      def each(&)
+        events.each(&)
       end
 
       def to_a
@@ -21,9 +21,8 @@ module JWCalendar
       end
 
       def to_h
-        { events: events }
+        { events: }
       end
-
     end
   end
 end
