@@ -26,6 +26,7 @@ module JWCalendar
         unless @first_gregorian_date.to_jdn == @last_julian_date.to_jdn + 1
           raise ArgumentError, "cutover dates must be consecutive absolute days"
         end
+
         freeze
       end
 
@@ -40,7 +41,7 @@ module JWCalendar
 
       def date(year, month, day)
         calendar = calendar_for_label(year, month, day)
-        CivilDate.new(year, month, day, calendar: calendar)
+        CivilDate.new(year, month, day, calendar:)
       end
 
       def to_jdn(year, month, day)
@@ -73,7 +74,7 @@ module JWCalendar
 
       def coerce_date(value, calendar)
         return value if value.is_a?(CivilDate) && value.calendar == calendar
-        return CivilDate.new(*value, calendar: calendar) if value.is_a?(Array) && value.length == 3
+        return CivilDate.new(*value, calendar:) if value.is_a?(Array) && value.length == 3
 
         raise ArgumentError, "cutover date must be a #{calendar} CivilDate or [year, month, day]"
       end

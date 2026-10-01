@@ -54,7 +54,7 @@ module JWCalendar
         a = Arithmetic::FloorDivision.div(14 - month, 12)
         y = year + 4_800 - a
         m = month + (12 * a) - 3
-        day + Arithmetic::FloorDivision.div(153 * m + 2, 5) + (365 * y) +
+        day + Arithmetic::FloorDivision.div((153 * m) + 2, 5) + (365 * y) +
           Arithmetic::FloorDivision.div(y, 4) - Arithmetic::FloorDivision.div(y, 100) +
           Arithmetic::FloorDivision.div(y, 400) - 32_045
       end
@@ -63,15 +63,16 @@ module JWCalendar
       def from_jdn(jdn)
         integer_jdn!(jdn)
         a = jdn + 32_044
-        b = Arithmetic::FloorDivision.div(4 * a + 3, 146_097)
+        b = Arithmetic::FloorDivision.div((4 * a) + 3, 146_097)
         c = a - Arithmetic::FloorDivision.div(146_097 * b, 4)
-        d = Arithmetic::FloorDivision.div(4 * c + 3, 1_461)
+        d = Arithmetic::FloorDivision.div((4 * c) + 3, 1_461)
         e = c - Arithmetic::FloorDivision.div(1_461 * d, 4)
-        m = Arithmetic::FloorDivision.div(5 * e + 2, 153)
-        day = e - Arithmetic::FloorDivision.div(153 * m + 2, 5) + 1
-        month = m + 3 - 12 * Arithmetic::FloorDivision.div(m, 10)
-        year = 100 * b + d - 4_800 + Arithmetic::FloorDivision.div(m, 10)
+        m = Arithmetic::FloorDivision.div((5 * e) + 2, 153)
+        day = e - Arithmetic::FloorDivision.div((153 * m) + 2, 5) + 1
+        month = m + 3 - (12 * Arithmetic::FloorDivision.div(m, 10))
+        year = (100 * b) + d - 4_800 + Arithmetic::FloorDivision.div(m, 10)
         raise InvalidDateError, "JDN is earlier than the supported Gregorian domain" unless year.positive?
+
         [year, month, day]
       end
 
@@ -83,7 +84,10 @@ module JWCalendar
       end
 
       def valid_year!(year)
-        raise ArgumentError, "year must be a positive Integer (1 CE or later)" unless year.is_a?(Integer) && year.positive?
+        return if year.is_a?(Integer) && year.positive?
+
+        raise ArgumentError,
+              "year must be a positive Integer (1 CE or later)"
       end
       private_class_method :valid_year!
 
@@ -102,7 +106,7 @@ module JWCalendar
       private_class_method :integer_jdn!
 
       def format_components(year, month, day)
-        [year, month, day].map { |part| part.to_s }.join("-")
+        [year, month, day].map(&:to_s).join("-")
       end
       private_class_method :format_components
     end

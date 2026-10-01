@@ -27,10 +27,6 @@ module JWCalendar
         leap_year?(year) ? 366 : 365
       end
 
-      def days_in_year(year)
-        leap_year?(year) ? 366 : 365
-      end
-
       # Whether the components form a valid Julian date.
       def valid_date?(year, month, day)
         return false unless year.is_a?(Integer) && year.positive?
@@ -55,7 +51,7 @@ module JWCalendar
         a = Arithmetic::FloorDivision.div(14 - month, 12)
         y = year + 4_800 - a
         m = month + (12 * a) - 3
-        day + Arithmetic::FloorDivision.div(153 * m + 2, 5) + (365 * y) +
+        day + Arithmetic::FloorDivision.div((153 * m) + 2, 5) + (365 * y) +
           Arithmetic::FloorDivision.div(y, 4) - 32_083
       end
 
@@ -64,18 +60,22 @@ module JWCalendar
         raise ArgumentError, "JDN must be an Integer" unless jdn.is_a?(Integer)
 
         c = jdn + 32_082
-        d = Arithmetic::FloorDivision.div(4 * c + 3, 1_461)
+        d = Arithmetic::FloorDivision.div((4 * c) + 3, 1_461)
         e = c - Arithmetic::FloorDivision.div(1_461 * d, 4)
-        m = Arithmetic::FloorDivision.div(5 * e + 2, 153)
-        day = e - Arithmetic::FloorDivision.div(153 * m + 2, 5) + 1
-        month = m + 3 - 12 * Arithmetic::FloorDivision.div(m, 10)
+        m = Arithmetic::FloorDivision.div((5 * e) + 2, 153)
+        day = e - Arithmetic::FloorDivision.div((153 * m) + 2, 5) + 1
+        month = m + 3 - (12 * Arithmetic::FloorDivision.div(m, 10))
         year = d - 4_800 + Arithmetic::FloorDivision.div(m, 10)
         raise InvalidDateError, "JDN is earlier than the supported Julian domain" unless year.positive?
+
         [year, month, day]
       end
 
       def valid_year!(year)
-        raise ArgumentError, "year must be a positive Integer (1 CE or later)" unless year.is_a?(Integer) && year.positive?
+        return if year.is_a?(Integer) && year.positive?
+
+        raise ArgumentError,
+              "year must be a positive Integer (1 CE or later)"
       end
       private_class_method :valid_year!
 
