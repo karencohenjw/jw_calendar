@@ -1,0 +1,7 @@
+/coverage/
+/pkg/
+/.bundle/
+/vendor/
+/.DS_Store
+*.gem
+*.log
