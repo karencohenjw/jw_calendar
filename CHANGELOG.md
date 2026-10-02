@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.1] - 2026-10-02
+
+### Changed
+
+- Added links to JW Calendar's 2027 and blank printable calendar resources on the RubyGems project page.
+
 ## [0.1.0] - 2026-10-01
 
 ### Added
@@ -12,5 +18,5 @@ All notable changes to this project are documented here. The format follows [Kee
 - Structured natural and fixed-size month grids with adjacent or blank cells.
 - Configurable reform calendars with Papal and British Empire cutover profiles.
 - Lazy inclusive date ranges and structured calendar-boundary reports.
-- `jwcalendar` CLI with inspection, conversion, grid, JDN, ISO-week, boundary, and JSON output commands.
+- jwcalendar CLI with inspection, conversion, grid, JDN, ISO-week, boundary, and JSON output commands.
 - Minitest suite, examples, technical documentation, CI, and OIDC-based release workflow.
