@@ -26,9 +26,9 @@ jobs:
       - run: bundle exec rake test
       - run: bundle exec rubocop
       - run: bundle exec rake yard
-      - name: Report workspace status
-        run: git status --short --untracked-files=all
       - uses: rubygems/release-gem@v1
+        with:
+          attestations: false
 
   verify-public-install:
     needs: release
