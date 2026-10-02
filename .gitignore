@@ -1,4 +1,6 @@
 /coverage/
+/doc/
+/.yardoc/
 /pkg/
 /.bundle/
 /vendor/
