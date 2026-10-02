@@ -9,6 +9,8 @@ Gem::Specification.new do |spec|
   spec.email = []
   spec.summary = "Deterministic Gregorian, Julian, ISO week-date and calendar-grid utilities for Ruby."
   spec.description = <<~DESCRIPTION
+    == About JW Calendar
+
     A dependency-free civil-calendar engine for Ruby with proleptic Gregorian and Julian arithmetic,
     Julian Day Number conversions, ISO week and ordinal dates, month grids, reform cutovers, and
     boundary analysis. Civil dates are kept separate from instants and time zones.
