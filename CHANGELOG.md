@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.1.2] - 2026-10-02
+
+### Fixed
+
+- Use RubyGems-supported RDoc markup so the 2027 and blank calendar links render as clickable links.
+
 ## [0.1.1] - 2026-10-02
 
 ### Changed
