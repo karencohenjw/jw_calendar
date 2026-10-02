@@ -17,7 +17,7 @@ class CLITest < Minitest::Test
   def test_version_help_and_inspection
     status, output, = run_cli("--version")
     assert_equal 0, status
-    assert_equal "jwcalendar 0.1.2\n", output
+    assert_equal "jwcalendar 0.1.3\n", output
     status, output, = run_cli("inspect", "2027-01-01")
     assert_equal 0, status
     assert_includes output, "iso week year: 2026"
