@@ -12,6 +12,9 @@ Gem::Specification.new do |spec|
     A dependency-free civil-calendar engine for Ruby with proleptic Gregorian and Julian arithmetic,
     Julian Day Number conversions, ISO week and ordinal dates, month grids, reform cutovers, and
     boundary analysis. Civil dates are kept separate from instants and time zones.
+
+    For printable calendar resources, see [2027 Calendar](https://jwcalendar.com/yearly-calendar/)
+    and [Blank Calendar](https://jwcalendar.com/blank-calendar/).
   DESCRIPTION
   spec.homepage = "https://jwcalendar.com/"
   spec.license = "MIT"
